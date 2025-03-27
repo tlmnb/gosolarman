@@ -5,7 +5,7 @@
 It provides functionality to encode and decode Modbus RTU frames, send requests, and validate responses.
 This library is designed to simplify communication with Solarman data logging sticks.
 
-It is based on the excellent python library [PySolarmanV5](https://github.com/jmccrohan/pysolarmanv5)
+It is based on the excellent python library [PySolarmanV5](https://github.com/jmccrohan/pysolarmanv5). The solarman protocol is described [here](https://pysolarmanv5.readthedocs.io/en/latest/solarmanv5_protocol.html).
 
 ## Usage
 As stated before this library is an extension of the [grid-x/modbus](https://github.com/grid-x/modbus) library. Therefore the usage is similar
