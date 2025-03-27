@@ -1,4 +1,5 @@
 # gosolarman
+![go build](https://github.com/tlmnb/gosolarman/actions/workflows/go.yml/badge.svg)
 ## Introduction
 `GoSolarman` is a Go library for interacting with Solarman devices using the Modbus RTU protocol by extending the [grid-x/modbus](https://github.com/grid-x/modbus) library. 
 It provides functionality to encode and decode Modbus RTU frames, send requests, and validate responses.
