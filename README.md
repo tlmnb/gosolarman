@@ -50,7 +50,7 @@ import (
 )
 
 func main() {
-  loggerSerial := uint32(1234567891)
+	loggerSerial := uint32(1234567891)
 	handler := gosolarman.NewSolarmanClientHandler("192.168.10.99:8899", loggerSerial)
 	handler.SlaveID = 0x01
 	handler.Logger = log.New(os.Stdout, "gosolarman: ", log.LstdFlags)
