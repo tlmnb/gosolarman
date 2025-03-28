@@ -9,6 +9,7 @@ import (
 	"net"
 	"sync"
 	"syscall"
+	"time"
 
 	"github.com/grid-x/modbus"
 )
@@ -37,6 +38,8 @@ const (
 
 	// OffsetTime is the offset timestamp (set to 0x00000000 for outgoing requests).
 	OffsetTime = 0x00000000
+
+	Timeout = 5 * time.Second 
 )
 
 // SolarmanClientHandler is a handler that combines the Solarman packager and transporter.
@@ -57,6 +60,8 @@ func NewSolarmanClientHandler(Address string, LoggerSerial uint32) *SolarmanClie
 	handler := &SolarmanClientHandler{}
 	handler.Address = Address
 	handler.LoggerSerial = LoggerSerial
+	handler.Timeout = Timeout
+	handler.ConnectDelay = 0
 	return handler
 }
 
@@ -76,10 +81,12 @@ func NewSolarmanClient(Address string, LoggerSerial uint32, SlaveID byte) modbus
 
 // solarmanTransporter handles the transport layer for Solarman communication.
 type solarmanTransporter struct {
-	Address string        // Address of the Solarman device.
-	mu      sync.Mutex    // Mutex for thread-safe access to the connection.
-	conn    net.Conn      // TCP connection to the Solarman device.
-	Logger  modbus.Logger // Logger for debugging and monitoring.
+	Address      string        // Address of the Solarman device.
+	mu           sync.Mutex    // Mutex for thread-safe access to the connection.
+	conn         net.Conn      // TCP connection to the Solarman device.
+	Logger       modbus.Logger // Logger for debugging and monitoring.
+	Timeout      time.Duration // Timeout for read/write operations.
+	ConnectDelay time.Duration // Delay before attempting first access to the device.
 }
 
 // Send sends a Modbus RTU request and receives the response.
@@ -174,11 +181,15 @@ func (mb *solarmanTransporter) connect() error {
 	if mb.conn == nil {
 		var conn net.Conn
 		var err error
-		if conn, err = net.Dial("tcp", mb.Address); err != nil {
+		d := net.Dialer{
+			Timeout: mb.Timeout,
+		}
+		if conn, err = d.Dial("tcp", mb.Address); err != nil {
 			return err
 		}
 		mb.conn = conn
 	}
+	time.Sleep(mb.ConnectDelay)
 	return nil
 }
 
@@ -192,13 +203,8 @@ func (mb *solarmanTransporter) reconnect() error {
 	} else {
 		mb.conn.Close()
 
-		var conn net.Conn
-		var err error
-		if conn, err = net.Dial("tcp", mb.Address); err != nil {
-			return err
-		}
-		mb.conn = conn
-		return nil
+		mb.conn = nil
+		return mb.connect()
 	}
 }
 
